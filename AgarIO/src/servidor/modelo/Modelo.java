@@ -212,7 +212,7 @@ public class Modelo {
 		}
 
 		Date dt = new Date();
-
+		String fecha = "";//"-"++"-"dt.;
 		baseDatos.registrarPartida(fecha, total, jugas);
 	}
 
