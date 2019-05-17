@@ -192,4 +192,12 @@ public class JuegoServidor extends PanelJuego {
 		return str.toString();
 	}
 
+	public ArrayList<Jugador> getJugadores() {
+		return jugadores;
+	}
+
+	public void setJugadores(ArrayList<Jugador> jugadores) {
+		this.jugadores = jugadores;
+	}
+
 }

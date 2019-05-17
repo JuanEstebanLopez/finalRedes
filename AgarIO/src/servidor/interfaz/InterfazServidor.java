@@ -3,6 +3,7 @@ package servidor.interfaz;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -180,5 +181,9 @@ public class InterfazServidor extends JFrame {
 		juego.IniciarJuego();
 		panelRanking.setNombres(usrs.split(Comunicacion.SEPARADOR_MIN));
 		btnIniciar.setVisible(false);
+	}
+	
+	public ArrayList<Jugador> getJugadoresPartida() {
+		return juego.getJugadores();
 	}
 }

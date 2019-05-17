@@ -7,10 +7,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
-
-import javax.swing.JOptionPane;
+import java.util.concurrent.TimeUnit;
 
 import comun.Jugador;
 
@@ -66,6 +67,7 @@ public class BaseDatos implements Serializable {
 		return datos.containsKey(email) && datos.get(email).getPassword().equals(pass);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void leer() {
 		try {
 			ObjectInputStream br = new ObjectInputStream(new FileInputStream(BD));
@@ -138,27 +140,42 @@ public class BaseDatos implements Serializable {
 
 	public LinkedList<RegistroPartida> getRegistros(String user) {
 		LinkedList<RegistroPartida> registros = new LinkedList<RegistroPartida>();
-
+		leerRegistros();
+		Iterator<RegistroPartida> it = registrosPartidas.iterator();
+		while (it.hasNext()) {
+			RegistroPartida p = it.next();
+			if (p.contieneJugador(user))
+				registros.add(p);
+		}
 		return registros;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void leerRegistros() {
+		registrosPartidas = REGISTRO_PARTIDAS();
+		if (registrosPartidas == null) {
+			registrosPartidas = new LinkedList<RegistroPartida>();
+			guardarRegistro();
+			leerRegistros();
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public static LinkedList<RegistroPartida> REGISTRO_PARTIDAS() {
+		LinkedList<RegistroPartida> registrosPartidas = new LinkedList<RegistroPartida>();
 		try {
 			ObjectInputStream br = new ObjectInputStream(new FileInputStream(REGISTRO));
 			registrosPartidas = (LinkedList<RegistroPartida>) br.readObject();
 			br.close();
 		} catch (FileNotFoundException e) {
-			registrosPartidas = new LinkedList<RegistroPartida>();
-			guardar();
-			leer();
-			e.printStackTrace();
+			return null;
 		} catch (IOException s) {
 			s.printStackTrace();
 		} catch (ClassNotFoundException m) {
 			m.printStackTrace();
 		}
 		System.out.println(registrosPartidas);
+		return registrosPartidas;
 	}
 
 	public boolean guardarRegistro() {
@@ -168,6 +185,13 @@ public class BaseDatos implements Serializable {
 			salida.writeObject(registrosPartidas);
 			salida.flush();
 			salida.close();
+			if (registrosPartidas.size() > 0) {
+				RegistroPartida r = registrosPartidas.get(registrosPartidas.size() - 1);
+
+				System.out.println(
+						"GUARDADOS:" + r.jugadores.size() + "  " + Arrays.toString(r.jugadores.keySet().toArray()));
+			}
+
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -186,12 +210,12 @@ public class BaseDatos implements Serializable {
 	public class RegistroPartida implements Serializable {
 		private HashMap<String, RegistroJugador> jugadores;
 		private String fecha;
-		private long tiempoTranscurrido;
+		private String tiempoTranscurrido;
 
-		public RegistroPartida(String fecha, long tiempoTranscurrido, Jugador[] jugador) {
+		public RegistroPartida(String fecha, long tiempo, Jugador[] jugador) {
 
 			this.jugadores = new HashMap<String, RegistroJugador>(5);
-
+			System.out.println("Reg Part " + Arrays.toString(jugador));
 			for (int i = 0; i < jugador.length; i++) {
 				Jugador j = jugador[i];
 				RegistroJugador juga = new RegistroJugador(j.getAlimentosConsumidos(), j.getPuntaje(),
@@ -200,7 +224,16 @@ public class BaseDatos implements Serializable {
 			}
 
 			this.fecha = fecha;
-			this.tiempoTranscurrido = tiempoTranscurrido;
+
+			long ms = TimeUnit.MILLISECONDS.toSeconds(tiempo);
+			long m = ms / 60;
+			long s = ms % 50;
+			String t = m + ":" + s;
+			this.tiempoTranscurrido = t;
+		}
+
+		public RegistroJugador jugador(String name) {
+			return jugadores.get(name);
 		}
 
 		public boolean contieneJugador(String juga) {
@@ -211,6 +244,10 @@ public class BaseDatos implements Serializable {
 			return jugadores;
 		}
 
+		public void setJugadores(HashMap<String, RegistroJugador> jugadores) {
+			this.jugadores = jugadores;
+		}
+
 		public String getFecha() {
 			return fecha;
 		}
@@ -219,11 +256,11 @@ public class BaseDatos implements Serializable {
 			this.fecha = fecha;
 		}
 
-		public long getTiempoTranscurrido() {
+		public String getTiempoTranscurrido() {
 			return tiempoTranscurrido;
 		}
 
-		public void setTiempoTranscurrido(long tiempoTranscurrido) {
+		public void setTiempoTranscurrido(String tiempoTranscurrido) {
 			this.tiempoTranscurrido = tiempoTranscurrido;
 		}
 

@@ -6,10 +6,11 @@ import java.net.Socket;
 
 public class WebServer implements Runnable {
 	private boolean active;
+	private BaseDatos bd;
 
-	public WebServer() {
+	public WebServer(BaseDatos bd) {
 		active = true;
-
+		this.bd = bd;
 	}
 
 	public void runServer() {
@@ -27,7 +28,7 @@ public class WebServer implements Runnable {
 				System.out.println("Waiting for the client request");
 				Socket remote = serverSocket.accept();
 				System.out.println("Connection made");
-				new Thread(new WebCllientHandler(remote)).start();
+				new Thread(new WebCllientHandler(remote, bd)).start();
 
 			}
 			serverSocket.close();

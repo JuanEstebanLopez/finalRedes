@@ -3,6 +3,8 @@ package servidor.modelo;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -48,7 +50,7 @@ public class Modelo {
 		salaChat = new SalaChat(this);
 		salaChat.aceptarClientes();
 
-		web = new WebServer();
+		web = new WebServer(baseDatos);
 		web.runServer();
 	}
 
@@ -196,11 +198,12 @@ public class Modelo {
 		finalTime = System.currentTimeMillis();
 
 		long total = finalTime - initialTime;
-		Jugador[] jugas = new Jugador[clientes.size()];
+		ArrayList<Jugador> listaJugadores = principal.getJugadoresPartida();
+		Jugador[] jugas = new Jugador[listaJugadores.size()];
 
 		int max = Integer.MIN_VALUE;
 		for (int i = 0; i < jugas.length; i++) {
-			Jugador jd = clientes.get(i).getJuga();
+			Jugador jd = listaJugadores.get(i);
 			jugas[i] = jd;
 			if (jd.getPuntaje() > max)
 				;
@@ -212,7 +215,9 @@ public class Modelo {
 		}
 
 		Date dt = new Date();
-		String fecha = "";//"-"++"-"dt.;
+		DateFormat dtf = new SimpleDateFormat("dd-mm-yyyy");
+		String fecha = dtf.format(dt);
+
 		baseDatos.registrarPartida(fecha, total, jugas);
 	}
 
